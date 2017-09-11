@@ -1,0 +1,14 @@
+
+/* Put your custom styles here */
+
+section {
+  padding: 20vh 0;
+}
+
+section:first-of-type {
+  padding-top: 0;
+}
+
+section:last-of-type {
+  padding-bottom: 0;
+}

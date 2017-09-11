@@ -1,0 +1,170 @@
+[meta title:"idyll-intro" description:"Short description of your project" /]
+
+[Header
+  title:"Scroll-linked Animations in Idyll"
+  subtitle:"We try things, sometimes it even works."
+  author:"Tony Chu"
+  authorLink:"https://twitter.com/tonyhschu" /]
+
+
+[fixed]
+
+[ClockComponent progress:`refs.test.scrollProgress.y` /]
+
+[/fixed]
+
+[section]
+
+This is an example for implementing scroll-linked animations in Idyll. This is a re-implementation of
+[what's here on bl.ocks.org](http://bl.ocks.org/tonyhschu/af64df46f7b5b760fc1db1260dd6ec6a). This blocks tries
+to take advantage of Idyll's native reactivity to implement the scroll-linked animation tricks I developed for
+[A Visual Introduction to Machine Learning](www.r2d3.us/visual-intro-to-machine-learning-part-1/) and [Let's Free Congress](letsfreecongress.org).
+
+[/section]
+
+[section ref:"test"]
+
+[section]
+
+# Animations
+
+In traditional animation, motion is linked to time. In Javascript that might be using `setInterval` to call some render code regularly, with the elapsed time as an input.
+
+[/section]
+
+[section]
+
+In scroll-linked animations, instead of using elapsed time, the scroll position is used as the driver of motion. In Idyll, your relative position as you scroll through 
+a section can be accessed via `refs.yourSectionName.scrollProgress.y`.
+
+Currently, it is [Display value:`refs.test.scrollProgress.y` /], i.e. **[Display value:`refs.test.scrollProgress.y * 100` /]%** through the section.
+
+This value can be transformed in various ways for various effects.
+
+[/section]
+
+[section]
+
+On the right, the scroll progress value is used as the input into a `d3.scale` function. That value is then used as the rotation value on the `<g>` group.
+
+[/section]
+
+[section]
+
+Idyll is reactive by nature, and has a refs system for handling scroll progress built in. We can take advantage of this by passing the scroll progress variable through a scale function.
+Framed as d3js scale functions, they will look something like this.
+
+```
+const d3Scale = require('d3-scale')
+
+const hourScale = d3Scale.scaleLinear()
+  .domain([0, 1])
+  .range([0, 360])
+
+const minuteScale = d3Scale.scaleLinear()
+  .domain([0, 1])
+  .range([0, 360 * 12])
+
+// Then ...
+const hourRotation = hourScale(scrollProgress)
+```
+
+[/section]
+
+[section]
+
+Since Idyll uses React under the hood, it is easy to implement a custom component which you can call from Idyll. The clock component on the right is called like this.
+
+```
+[ClockComponent progress:`refs.test.scrollProgress.y` /]
+```
+
+Which I have to say is pretty great.
+
+[/section]
+
+[section]
+
+The React component looks like this. (Note that is inherits from `IdyllComponent`)
+
+```
+const React = require('react');
+const IdyllComponent = require('idyll-component');
+const d3Scale = require('d3-scale')
+
+const hourScale = d3Scale.scaleLinear()
+  .range([0, 360])
+
+const minuteScale = d3Scale.scaleLinear()
+  .range([0, 360 * 12])
+
+class ClockComponent extends IdyllComponent {
+  render() {
+    const hourRotation = hourScale(this.props.progress)
+    const minuteRotation = minuteScale(this.props.progress)
+
+    return (
+      <svg width="300" height="300">
+        <g transform={`translate(150,150) rotate(${hourRotation})`}>
+          <rect height="113" width="6" x="-3" y="-110" fill="#000" />
+        </g>
+        <g transform={`translate(150,150) rotate(${minuteRotation})`}>
+          <rect height="152" width="4" x="-2" y="-150" fill="#000" />
+        </g>
+      </svg>
+    );
+  }
+}
+
+module.exports = ClockComponent;
+```
+
+[/section]
+
+[/section]
+
+[section]
+
+## Pacing
+
+These panels that contains the text are spaced according to the height of the window, such that just one paragraph is visible at a time. 
+To achieve this in a responsive way, I use vh units to set the top and bottom padding on each section. That way, the paragraphs are spaced correctly no matter the size of the screen.
+
+The css looks like this:
+
+```
+section {
+  padding: 20vh 0;
+}
+
+section:first-of-type {
+  padding-top: 0;
+}
+
+section:last-of-type {
+  padding-bottom: 0;
+}
+```
+
+This can probably be better, but it demonstrative of how to achieve this effect.
+
+[/section]
+
+[section]
+
+## Questions for Idyll Folks
+
+1. The refs scroll progress appears to be clamped between 0 and 1. Often times I want an animation to start slightly before the section begins. In my other work I would specify an animation like the following.
+
+```
+[
+  { section: '#test', percentage: -0.1, value: 0 },
+  { section: '#test', percentage: 0.5, value: 1 }
+]
+```
+
+... then run this through an interpolator factory-thing. How would I achieve something like that here?
+
+2. I used (what I call in my head) section-scoped fixed panels a lot. They behave like the fixed components through a section, but then stays anchored to the bottom (or top) of the section it belongs to when you scroll away from the section. Should that be implemented as a custom component?
+
+[/section]
