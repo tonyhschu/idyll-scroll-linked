@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+      <title>
+        idyll-intro
+      </title>
+      <meta property="og:title" content="idyll-intro">
+    <meta charset="utf-8">
+    <meta property="og:type" content="article">
+
+      <meta property="og:description" content="Short description of your project">
+      <meta property="description" content="Short description of your project">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div id="idyll-mount"><div class="idyll-root" data-reactroot="" data-reactid="1" data-react-checksum="1986354347"><div class="article-header" data-reactid="2"><h1 class="hed" data-reactid="3">Scroll-linked Animations in Idyll</h1><h2 class="dek" data-reactid="4">We try things, sometimes it even works.</h2><div class="byline" data-reactid="5"><!-- react-text: 6 -->By: <!-- /react-text --><a href="https://twitter.com/tonyhschu" data-reactid="7">Tony Chu</a></div></div><div style="position:fixed;" class="fixed" data-reactid="8"><svg width="300" height="300" data-reactid="9"><g transform="translate(150,150) rotate(NaN)" data-reactid="10"><rect height="113" width="6" x="-3" y="-110" fill="#000" data-reactid="11"></rect></g><g transform="translate(150,150) rotate(NaN)" data-reactid="12"><rect height="152" width="4" x="-2" y="-150" fill="#000" data-reactid="13"></rect></g></svg></div><section data-reactid="14"><p data-reactid="15"><!-- react-text: 16 -->This is an example for implementing scroll-linked animations in Idyll. This is a re-implementation of<!-- /react-text --><a href="http://bl.ocks.org/tonyhschu/af64df46f7b5b760fc1db1260dd6ec6a" data-reactid="17"><!-- react-text: 18 -->what’s here on bl.ocks.org<!-- /react-text --></a><!-- react-text: 19 -->. This blocks tries
+to take advantage of Idyll’s native reactivity to implement the scroll-linked animation tricks I developed for<!-- /react-text --><a href="www.r2d3.us/visual-intro-to-machine-learning-part-1/" data-reactid="20"><!-- react-text: 21 -->A Visual Introduction to Machine Learning<!-- /react-text --></a><!-- react-text: 22 --> and <!-- /react-text --><a href="letsfreecongress.org" data-reactid="23"><!-- react-text: 24 -->Let’s Free Congress<!-- /react-text --></a><!-- react-text: 25 -->.<!-- /react-text --></p></section><section data-reactid="26"><section data-reactid="27"><h1 data-reactid="28"><!-- react-text: 29 -->Animations<!-- /react-text --></h1><p data-reactid="30"><!-- react-text: 31 -->In traditional animation, motion is linked to time. In Javascript that might be using <!-- /react-text --><code data-reactid="32"><!-- react-text: 33 -->setInterval<!-- /react-text --></code><!-- react-text: 34 --> to call some render code regularly, with the elapsed time as an input.<!-- /react-text --></p></section><section data-reactid="35"><p data-reactid="36"><!-- react-text: 37 -->In scroll-linked animations, instead of using elapsed time, the scroll position is used as the driver of motion. In Idyll, your relative position as you scroll through 
+a section can be accessed via <!-- /react-text --><code data-reactid="38"><!-- react-text: 39 -->refs.yourSectionName.scrollProgress.y<!-- /react-text --></code><!-- react-text: 40 -->.<!-- /react-text --></p><p data-reactid="41"><!-- react-text: 42 -->Currently, it is <!-- /react-text --><span data-reactid="43"></span><!-- react-text: 44 -->, i.e. **<!-- /react-text --><span data-reactid="45"></span><!-- react-text: 46 -->%** through the section.<!-- /react-text --></p><p data-reactid="47"><!-- react-text: 48 -->This value can be transformed in various ways for various effects.<!-- /react-text --></p></section><section data-reactid="49"><p data-reactid="50"><!-- react-text: 51 -->On the right, the scroll progress value is used as the input into a <!-- /react-text --><code data-reactid="52"><!-- react-text: 53 -->d3.scale<!-- /react-text --></code><!-- react-text: 54 --> function. That value is then used as the rotation value on the <!-- /react-text --><code data-reactid="55"><!-- react-text: 56 -->&lt;g&gt;<!-- /react-text --></code><!-- react-text: 57 --> group.<!-- /react-text --></p></section><section data-reactid="58"><p data-reactid="59"><!-- react-text: 60 -->Idyll is reactive by nature, and has a refs system for handling scroll progress built in. We can take advantage of this by passing the scroll progress variable through a scale function.
+Framed as d3js scale functions, they will look something like this.<!-- /react-text --></p><pre data-reactid="61"><code data-reactid="62"><!-- react-text: 63 -->const d3Scale = require(&#x27;d3-scale&#x27;)
+
+const hourScale = d3Scale.scaleLinear()
+  .domain([0, 1])
+  .range([0, 360])
+
+const minuteScale = d3Scale.scaleLinear()
+  .domain([0, 1])
+  .range([0, 360 * 12])
+
+// Then ...
+const hourRotation = hourScale(scrollProgress)<!-- /react-text --></code></pre></section><section data-reactid="64"><p data-reactid="65"><!-- react-text: 66 -->Since Idyll uses React under the hood, it is easy to implement a custom component which you can call from Idyll. The clock component on the right is called like this.<!-- /react-text --></p><pre data-reactid="67"><code data-reactid="68"><!-- react-text: 69 -->[ClockComponent progress:`refs.test.scrollProgress.y` /]<!-- /react-text --></code></pre><p data-reactid="70"><!-- react-text: 71 -->Which I have to say is pretty great.<!-- /react-text --></p></section><section data-reactid="72"><p data-reactid="73"><!-- react-text: 74 -->The React component looks like this. (Note that is inherits from <!-- /react-text --><code data-reactid="75"><!-- react-text: 76 -->IdyllComponent<!-- /react-text --></code><!-- react-text: 77 -->)<!-- /react-text --></p><pre data-reactid="78"><code data-reactid="79"><!-- react-text: 80 -->const React = require(&#x27;react&#x27;);
+const IdyllComponent = require(&#x27;idyll-component&#x27;);
+const d3Scale = require(&#x27;d3-scale&#x27;)
+
+const hourScale = d3Scale.scaleLinear()
+  .range([0, 360])
+
+const minuteScale = d3Scale.scaleLinear()
+  .range([0, 360 * 12])
+
+class ClockComponent extends IdyllComponent {
+  render() {
+    const hourRotation = hourScale(this.props.progress)
+    const minuteRotation = minuteScale(this.props.progress)
+
+    return (
+      &lt;svg width=&quot;300&quot; height=&quot;300&quot;&gt;
+        &lt;g transform={`translate(150,150) rotate(${hourRotation})`}&gt;
+          &lt;rect height=&quot;113&quot; width=&quot;6&quot; x=&quot;-3&quot; y=&quot;-110&quot; fill=&quot;#000&quot; /&gt;
+        &lt;/g&gt;
+        &lt;g transform={`translate(150,150) rotate(${minuteRotation})`}&gt;
+          &lt;rect height=&quot;152&quot; width=&quot;4&quot; x=&quot;-2&quot; y=&quot;-150&quot; fill=&quot;#000&quot; /&gt;
+        &lt;/g&gt;
+      &lt;/svg&gt;
+    );
+  }
+}
+
+module.exports = ClockComponent;<!-- /react-text --></code></pre></section></section><section data-reactid="81"><h2 data-reactid="82"><!-- react-text: 83 -->Pacing<!-- /react-text --></h2><p data-reactid="84"><!-- react-text: 85 -->These panels that contains the text are spaced according to the height of the window, such that just one paragraph is visible at a time. 
+To achieve this in a responsive way, I use vh units to set the top and bottom padding on each section. That way, the paragraphs are spaced correctly no matter the size of the screen.<!-- /react-text --></p><p data-reactid="86"><!-- react-text: 87 -->The css looks like this:<!-- /react-text --></p><pre data-reactid="88"><code data-reactid="89"><!-- react-text: 90 -->section {
+  padding: 20vh 0;
+}
+
+section:first-of-type {
+  padding-top: 0;
+}
+
+section:last-of-type {
+  padding-bottom: 0;
+}<!-- /react-text --></code></pre><p data-reactid="91"><!-- react-text: 92 -->This can probably be better, but it demonstrative of how to achieve this effect.<!-- /react-text --></p></section><section data-reactid="93"><h2 data-reactid="94"><!-- react-text: 95 -->Questions for Idyll Folks<!-- /react-text --></h2><ol data-reactid="96"><li data-reactid="97"><!-- react-text: 98 -->The refs scroll progress appears to be clamped between <!-- /react-text --><!-- react-text: 99 -->0<!-- /react-text --><!-- react-text: 100 --> and <!-- /react-text --><!-- react-text: 101 -->1<!-- /react-text --><!-- react-text: 102 -->. Often times I want an animation to start slightly before the section begins. In my other work I would specify an animation like the following.<!-- /react-text --></li></ol><pre data-reactid="103"><code data-reactid="104"><!-- react-text: 105 -->[
+  { section: &#x27;#test&#x27;, percentage: -0.1, value: 0 },
+  { section: &#x27;#test&#x27;, percentage: 0.5, value: 1 }
+]<!-- /react-text --></code></pre><p data-reactid="106"><!-- react-text: 107 -->... then run this through an interpolator factory-thing. How would I achieve something like that here?<!-- /react-text --></p><ol data-reactid="108"><li data-reactid="109"><!-- react-text: 110 -->I used (what I call in my head) section-scoped fixed panels a lot. They behave like the fixed components through a section, but then stays anchored to the bottom (or top) of the section it belongs to when you scroll away from the section. Should that be implemented as a custom component?<!-- /react-text --></li></ol></section></div></div>
+    <script src="index.js"></script>
+  </body>
+</html>
