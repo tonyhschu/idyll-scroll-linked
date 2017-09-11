@@ -10,8 +10,10 @@ const minuteScale = d3Scale.scaleLinear()
 
 class ClockComponent extends IdyllComponent {
   render() {
-    const hourRotation = hourScale(this.props.progress)
-    const minuteRotation = minuteScale(this.props.progress)
+    const progress = this.props.progress || 0
+
+    const hourRotation = hourScale(progress)
+    const minuteRotation = minuteScale(progress)
 
     return (
       <svg width="300" height="300">
